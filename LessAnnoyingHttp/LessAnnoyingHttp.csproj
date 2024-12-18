@@ -2,8 +2,22 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <Version>1.0.0</Version>
+        <Authors>DemonExposer</Authors>
+        <Description>Simpler HTTP requests in .NET</Description>
+        <PackageTags>HTTP</PackageTags>
+        <RepositoryUrl>https://github.com/DemonExposer/LessAnnoyingHttp</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/DemonExposer/LessAnnoyingHttp</PackageProjectUrl>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Title>LessAnnoyingHttp</Title>
+        <Copyright>Copyright (c) 2024 DemonExposer</Copyright>
     </PropertyGroup>
 
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
 </Project>
