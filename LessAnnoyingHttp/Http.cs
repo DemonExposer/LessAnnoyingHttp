@@ -3,6 +3,12 @@
 namespace LessAnnoyingHttp;
 
 public class Http {
+	/// <summary>
+	/// Sends a GET request
+	/// </summary>
+	/// <param name="endpoint">The URL to send the request to</param>
+	/// <param name="headers">Optional headers</param>
+	/// <returns><see cref="Response"/></returns>
 	public static Response Get(string endpoint, Header[]? headers = null) {
 		using HttpClient client = new ();
 		HttpRequestMessage request = new () {
@@ -45,12 +51,44 @@ public class Http {
 
 		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = response.Content.ReadAsStringAsync().Result, StatusCode = response.StatusCode };
 	}
+	
+	/// <summary>
+	/// Sends a DELETE request
+	/// </summary>
+	/// <param name="endpoint">The URL to send the request to</param>
+	/// <param name="body">The request body</param>
+	/// <param name="headers">Optional headers</param>
+	/// <param name="contentType">The content type of the body - default = application/json</param>
+	/// <returns><see cref="Response"/></returns>
+	public static Response Delete(string endpoint, string body, Header[]? headers = null, string contentType = "application/json") => BodyRequest(endpoint, HttpMethod.Delete, body, headers, contentType);
 
+	/// <summary>
+	/// Sends a PATCH request
+	/// </summary>
+	/// <param name="endpoint">The URL to send the request to</param>
+	/// <param name="body">The request body</param>
+	/// <param name="headers">Optional headers</param>
+	/// <param name="contentType">The content type of the body - default = application/json</param>
+	/// <returns><see cref="Response"/></returns>
 	public static Response Patch(string endpoint, string body, Header[]? headers = null, string contentType = "application/json") => BodyRequest(endpoint, HttpMethod.Patch, body, headers, contentType);
 	
+	/// <summary>
+	/// Sends a POST request
+	/// </summary>
+	/// <param name="endpoint">The URL to send the request to</param>
+	/// <param name="body">The request body</param>
+	/// <param name="headers">Optional headers</param>
+	/// <param name="contentType">The content type of the body - default = application/json</param>
+	/// <returns><see cref="Response"/></returns>
 	public static Response Post(string endpoint, string body, Header[]? headers = null, string contentType = "application/json") => BodyRequest(endpoint, HttpMethod.Post, body, headers, contentType);
 	
+	/// <summary>
+	/// Sends a PUT request
+	/// </summary>
+	/// <param name="endpoint">The URL to send the request to</param>
+	/// <param name="body">The request body</param>
+	/// <param name="headers">Optional headers</param>
+	/// <param name="contentType">The content type of the body - default = application/json</param>
+	/// <returns><see cref="Response"/></returns>
 	public static Response Put(string endpoint, string body, Header[]? headers = null, string contentType = "application/json") => BodyRequest(endpoint, HttpMethod.Put, body, headers, contentType);
-
-	public static Response Delete(string endpoint, string body, Header[]? headers = null, string contentType = "application/json") => BodyRequest(endpoint, HttpMethod.Delete, body, headers, contentType);
 }
