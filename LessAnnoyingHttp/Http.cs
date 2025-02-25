@@ -2,7 +2,13 @@
 
 namespace LessAnnoyingHttp;
 
-public class Http {
+public static class Http {
+	/// <summary>
+	/// The timeout in seconds which requests should wait for before failing (default: 10)<br/>
+	/// Changing this value changes the timeouts globally
+	/// </summary>
+	public static int Timeout { get; set; } = 10;
+	
 	/// <summary>
 	/// Sends a GET request
 	/// </summary>
@@ -11,6 +17,7 @@ public class Http {
 	/// <returns><see cref="Response"/></returns>
 	public static Response Get(string endpoint, Header[]? headers = null) {
 		using HttpClient client = new ();
+		client.Timeout = TimeSpan.FromSeconds(Timeout);
 		HttpRequestMessage request = new () {
 			RequestUri = new Uri(endpoint),
 			Method = HttpMethod.Get
@@ -22,9 +29,11 @@ public class Http {
 		
 		HttpResponseMessage response;
 		try {
-			response = client.SendAsync(request).Result;
+			response = client.Send(request);
+		} catch (TaskCanceledException) {
+			throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
 		} catch (Exception e) {
-			return new Response { IsSuccessful = false, Body = "", Exception = e};
+			return new Response { IsSuccessful = false, Body = "", Exception = e };
 		} 
 
 		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = response.Content.ReadAsStringAsync().Result, StatusCode = response.StatusCode };
@@ -32,6 +41,7 @@ public class Http {
 
 	private static Response BodyRequest(string endpoint, HttpMethod method, string body, Header[]? headers, string contentType) {
 		using HttpClient client = new ();
+		client.Timeout = TimeSpan.FromSeconds(Timeout);
 		HttpRequestMessage request = new () {
 			RequestUri = new Uri(endpoint),
 			Method = method,
@@ -45,6 +55,8 @@ public class Http {
 		HttpResponseMessage response;
 		try {
 			response = client.Send(request);
+		} catch (TaskCanceledException) {
+			throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
 		} catch (Exception e) {
 			return new Response { IsSuccessful = false, Body = "", Exception = e };
 		} 
