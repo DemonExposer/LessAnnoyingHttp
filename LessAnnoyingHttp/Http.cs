@@ -23,8 +23,8 @@ public class Http {
 		HttpResponseMessage response;
 		try {
 			response = client.SendAsync(request).Result;
-		} catch (Exception) {
-			return new Response { IsSuccessful = false, Body = "" };
+		} catch (Exception e) {
+			return new Response { IsSuccessful = false, Body = "", Exception = e};
 		} 
 
 		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = response.Content.ReadAsStringAsync().Result, StatusCode = response.StatusCode };
