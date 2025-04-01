@@ -29,7 +29,7 @@ public static class Http {
 		
 		HttpResponseMessage response;
 		try {
-			response = client.Send(request);
+			response = client.SendAsync(request).Result;
 		} catch (TaskCanceledException) {
 			throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
 		} catch (Exception e) {
@@ -54,7 +54,7 @@ public static class Http {
 		
 		HttpResponseMessage response;
 		try {
-			response = client.Send(request);
+			response = client.SendAsync(request).Result;
 		} catch (TaskCanceledException) {
 			throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
 		} catch (Exception e) {
