@@ -34,9 +34,9 @@ public static class Http {
 			throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
 		} catch (Exception e) {
 			return new Response { IsSuccessful = false, Body = "", Exception = e };
-		} 
-
-		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = response.Content.ReadAsStringAsync().Result, StatusCode = response.StatusCode };
+		}
+		
+		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = response.Content.ReadAsStringAsync().Result, Headers = response.Headers.ToDictionary(), StatusCode = response.StatusCode };
 	}
 
 	private static Response BodyRequest(string endpoint, HttpMethod method, string body, Header[]? headers, string contentType) {
@@ -61,7 +61,7 @@ public static class Http {
 			return new Response { IsSuccessful = false, Body = "", Exception = e };
 		} 
 
-		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = response.Content.ReadAsStringAsync().Result, StatusCode = response.StatusCode };
+		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = response.Content.ReadAsStringAsync().Result, Headers = response.Headers.ToDictionary(), StatusCode = response.StatusCode };
 	}
 	
 	/// <summary>

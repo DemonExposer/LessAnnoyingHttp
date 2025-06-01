@@ -18,6 +18,11 @@ public class Response {
 	/// The response of the HTTP request (is empty when the request failed)
 	/// </summary>
 	public string Body { get; internal init; } = "";
+
+	/// <summary>
+	/// The headers sent back by the server
+	/// </summary>
+	public Dictionary<string, IEnumerable<string>> Headers { get; internal init; } = [];
 	
 	/// <summary>
 	/// Specifies whether the request was successful
