@@ -3,11 +3,23 @@
 namespace LessAnnoyingHttp;
 
 public static class Http {
+	private static readonly HttpClient Client = new (new SocketsHttpHandler {
+		PooledConnectionLifetime = TimeSpan.FromMinutes(2)
+	});
+
 	/// <summary>
 	/// The timeout in seconds which requests should wait for before failing (default: 10)<br/>
 	/// Changing this value changes the timeouts globally
 	/// </summary>
-	public static int Timeout { get; set; } = 10;
+	public static int Timeout {
+		get => (int) Client.Timeout.TotalSeconds;
+		set => Client.Timeout = TimeSpan.FromSeconds(value);
+	}
+
+	static Http() {
+		Timeout = 10;
+		AppDomain.CurrentDomain.ProcessExit += (_, _) => Client.Dispose();
+	}
 	
 	/// <summary>
 	/// Sends a GET request
@@ -16,8 +28,6 @@ public static class Http {
 	/// <param name="headers">Optional headers</param>
 	/// <returns><see cref="Response"/></returns>
 	public static async Task<Response> GetAsync(string endpoint, Header[]? headers = null) {
-		using HttpClient client = new ();
-		client.Timeout = TimeSpan.FromSeconds(Timeout);
 		HttpRequestMessage request = new () {
 			RequestUri = new Uri(endpoint),
 			Method = HttpMethod.Get
@@ -29,7 +39,7 @@ public static class Http {
 		
 		HttpResponseMessage response;
 		try {
-			response = await client.SendAsync(request);
+			response = await Client.SendAsync(request);
 		} catch (TaskCanceledException) {
 			throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
 		} catch (Exception e) {
@@ -45,8 +55,6 @@ public static class Http {
 	public static Response Get(string endpoint, Header[]? headers = null) => GetAsync(endpoint, headers).GetAwaiter().GetResult();
 
 	private static async Task<Response> BodyRequest(string endpoint, HttpMethod method, string body, Header[]? headers, string contentType) {
-		using HttpClient client = new ();
-		client.Timeout = TimeSpan.FromSeconds(Timeout);
 		HttpRequestMessage request = new () {
 			RequestUri = new Uri(endpoint),
 			Method = method,
@@ -59,7 +67,7 @@ public static class Http {
 		
 		HttpResponseMessage response;
 		try {
-			response = await client.SendAsync(request);
+			response = await Client.SendAsync(request);
 		} catch (TaskCanceledException) {
 			throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
 		} catch (Exception e) {
