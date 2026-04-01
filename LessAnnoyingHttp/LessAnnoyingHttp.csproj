@@ -15,6 +15,7 @@
         <Nullable>enable</Nullable>
         <Title>LessAnnoyingHttp</Title>
         <Copyright>Copyright (c) 2026 DemonExposer</Copyright>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
