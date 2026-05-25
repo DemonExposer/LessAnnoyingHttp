@@ -46,7 +46,7 @@ public static class Http {
 			return new Response { IsSuccessful = false, Body = "", Exception = e };
 		}
 		
-		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = response.Content.ReadAsStringAsync().Result, Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
+		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = await response.Content.ReadAsStringAsync(), Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
 	}
 	
 	/// <summary>
@@ -74,7 +74,7 @@ public static class Http {
 			return new Response { IsSuccessful = false, Body = "", Exception = e };
 		} 
 
-		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = response.Content.ReadAsStringAsync().Result, Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
+		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = await response.Content.ReadAsStringAsync(), Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
 	}
 	
 	/// <summary>
