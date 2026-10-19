@@ -28,53 +28,61 @@ public static class Http {
 	/// <param name="headers">Optional headers</param>
 	/// <returns><see cref="Response"/></returns>
 	public static async Task<Response> GetAsync(string endpoint, Header[]? headers = null) {
-		HttpRequestMessage request = new () {
-			RequestUri = new Uri(endpoint),
-			Method = HttpMethod.Get
-		};
+		using HttpRequestMessage request = new ();
+		
+		request.RequestUri = new Uri(endpoint);
+		request.Method = HttpMethod.Get;
 		
 		if (headers != null)
 			foreach (Header header in headers)
 				request.Headers.Add(header.Name, header.Value);
 		
-		HttpResponseMessage response;
+		HttpResponseMessage? response = null;
 		try {
-			response = await Client.SendAsync(request);
-		} catch (TaskCanceledException) {
-			throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
-		} catch (Exception e) {
-			return new Response { IsSuccessful = false, Body = "", Exception = e };
+			try {
+				response = await Client.SendAsync(request);
+			} catch (TaskCanceledException) {
+				throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
+			} catch (Exception e) {
+				return new Response { IsSuccessful = false, Body = "", Exception = e };
+			}
+
+			return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = await response.Content.ReadAsStringAsync(), Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
+		} finally {
+			response?.Dispose();
 		}
-		
-		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = await response.Content.ReadAsStringAsync(), Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
 	}
 	
 	/// <summary>
 	/// Synchronous version of <see cref="GetAsync"/>
 	/// </summary>
-	public static Response Get(string endpoint, Header[]? headers = null) => GetAsync(endpoint, headers).GetAwaiter().GetResult();
+	public static Response Get(string endpoint, Header[]? headers = null) => GetAsync(endpoint, headers).ConfigureAwait(false).GetAwaiter().GetResult();
 
 	private static async Task<Response> BodyRequest(string endpoint, HttpMethod method, string body, Header[]? headers, string contentType) {
-		HttpRequestMessage request = new () {
-			RequestUri = new Uri(endpoint),
-			Method = method,
-			Content = new StringContent(body, Encoding.UTF8, contentType)
-		};
+		using HttpRequestMessage request = new ();
+		
+		request.RequestUri = new Uri(endpoint);
+		request.Method = method;
+		request.Content = new StringContent(body, Encoding.UTF8, contentType);
 		
 		if (headers != null)
 			foreach (Header header in headers)
 				request.Headers.Add(header.Name, header.Value);
-		
-		HttpResponseMessage response;
-		try {
-			response = await Client.SendAsync(request);
-		} catch (TaskCanceledException) {
-			throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
-		} catch (Exception e) {
-			return new Response { IsSuccessful = false, Body = "", Exception = e };
-		} 
 
-		return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = await response.Content.ReadAsStringAsync(), Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
+		HttpResponseMessage? response = null;
+		try {
+			try {
+				response = await Client.SendAsync(request);
+			} catch (TaskCanceledException) {
+				throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
+			} catch (Exception e) {
+				return new Response { IsSuccessful = false, Body = "", Exception = e };
+			}
+
+			return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = await response.Content.ReadAsStringAsync(), Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
+		} finally {
+			response?.Dispose();
+		}
 	}
 	
 	/// <summary>
