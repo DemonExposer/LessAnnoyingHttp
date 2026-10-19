@@ -20,18 +20,12 @@ public static class Http {
 		Timeout = 10;
 		AppDomain.CurrentDomain.ProcessExit += (_, _) => Client.Dispose();
 	}
-	
-	/// <summary>
-	/// Sends a GET request
-	/// </summary>
-	/// <param name="endpoint">The URL to send the request to</param>
-	/// <param name="headers">Optional headers</param>
-	/// <returns><see cref="Response"/></returns>
-	public static async Task<Response> GetAsync(string endpoint, Header[]? headers = null) {
+
+	private static async Task<Response> BodylessRequest(string endpoint, HttpMethod method, Header[]? headers = null) {
 		using HttpRequestMessage request = new ();
 		
 		request.RequestUri = new Uri(endpoint);
-		request.Method = HttpMethod.Get;
+		request.Method = method;
 		
 		if (headers != null)
 			foreach (Header header in headers)
@@ -40,23 +34,45 @@ public static class Http {
 		HttpResponseMessage? response = null;
 		try {
 			try {
-				response = await Client.SendAsync(request);
+				response = await Client.SendAsync(request).ConfigureAwait(false);
 			} catch (TaskCanceledException) {
 				throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
 			} catch (Exception e) {
 				return new Response { IsSuccessful = false, Body = "", Exception = e };
 			}
 
-			return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = await response.Content.ReadAsStringAsync(), Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
+			return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = await response.Content.ReadAsStringAsync().ConfigureAwait(false), Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
 		} finally {
 			response?.Dispose();
 		}
 	}
 	
 	/// <summary>
+	/// Sends a GET request
+	/// </summary>
+	/// <param name="endpoint">The URL to send the request to</param>
+	/// <param name="headers">Optional headers</param>
+	/// <returns><see cref="Response"/></returns>
+	public static async Task<Response> GetAsync(string endpoint, Header[]? headers = null) => await BodylessRequest(endpoint, HttpMethod.Get, headers);
+	
+	/// <summary>
 	/// Synchronous version of <see cref="GetAsync"/>
 	/// </summary>
-	public static Response Get(string endpoint, Header[]? headers = null) => GetAsync(endpoint, headers).ConfigureAwait(false).GetAwaiter().GetResult();
+	public static Response Get(string endpoint, Header[]? headers = null) => GetAsync(endpoint, headers).GetAwaiter().GetResult();
+	
+	/// <summary>
+	/// Sends a DELETE request
+	/// </summary>
+	/// <param name="endpoint">The URL to send the request to</param>
+	/// <param name="headers">Optional headers</param>
+	/// <param name="contentType">The content type of the body - default = application/json</param>
+	/// <returns><see cref="Response"/></returns>
+	public static async Task<Response> DeleteAsync(string endpoint, Header[]? headers = null) => await BodylessRequest(endpoint, HttpMethod.Delete, headers);
+	
+	/// <summary>
+	/// Synchronous version of <see cref="DeleteAsync"/>
+	/// </summary>
+	public static Response Delete(string endpoint, Header[]? headers = null) => DeleteAsync(endpoint, headers).GetAwaiter().GetResult();
 
 	private static async Task<Response> BodyRequest(string endpoint, HttpMethod method, string body, Header[]? headers, string contentType) {
 		using HttpRequestMessage request = new ();
@@ -72,33 +88,18 @@ public static class Http {
 		HttpResponseMessage? response = null;
 		try {
 			try {
-				response = await Client.SendAsync(request);
+				response = await Client.SendAsync(request).ConfigureAwait(false);
 			} catch (TaskCanceledException) {
 				throw new TimeoutException($"Timeout waiting for response for request to {endpoint}");
 			} catch (Exception e) {
 				return new Response { IsSuccessful = false, Body = "", Exception = e };
 			}
 
-			return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = await response.Content.ReadAsStringAsync(), Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
+			return new Response { IsSuccessful = response.IsSuccessStatusCode, Body = await response.Content.ReadAsStringAsync().ConfigureAwait(false), Headers = new Dictionary<string, IEnumerable<string>>(response.Headers.ToDictionary(), StringComparer.OrdinalIgnoreCase), StatusCode = response.StatusCode };
 		} finally {
 			response?.Dispose();
 		}
 	}
-	
-	/// <summary>
-	/// Sends a DELETE request
-	/// </summary>
-	/// <param name="endpoint">The URL to send the request to</param>
-	/// <param name="body">The request body</param>
-	/// <param name="headers">Optional headers</param>
-	/// <param name="contentType">The content type of the body - default = application/json</param>
-	/// <returns><see cref="Response"/></returns>
-	public static async Task<Response> DeleteAsync(string endpoint, string body, Header[]? headers = null, string contentType = "application/json") => await BodyRequest(endpoint, HttpMethod.Delete, body, headers, contentType);
-	
-	/// <summary>
-	/// Synchronous version of <see cref="DeleteAsync"/>
-	/// </summary>
-	public static Response Delete(string endpoint, string body, Header[]? headers = null, string contentType = "application/json") => DeleteAsync(endpoint, body, headers, contentType).GetAwaiter().GetResult();
 
 	/// <summary>
 	/// Sends a PATCH request
